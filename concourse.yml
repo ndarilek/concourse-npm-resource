@@ -1,0 +1,28 @@
+resources:
+
+- name: repo
+  type: git
+  source:
+    uri: https://github.com/ndarilek/concourse-npm-resource
+    branch: master
+
+- name: image
+  type: docker-image
+  source:
+    username: {{registry_username}}
+    email: {{registry_email}}
+    password: {{registry_password}}
+    repository: nolan/concourse-npm-resource
+
+jobs:
+
+- name: build
+  public: true
+  plan:
+
+  - get: repo
+    trigger: true
+
+  - put: image
+    params:
+      build: repo
