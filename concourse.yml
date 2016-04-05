@@ -16,11 +16,36 @@ resources:
 
 jobs:
 
+- name: test
+  public: true
+  plan:
+
+  - get: repo
+    trigger: true
+
+  - task: run tests
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source: {repository: node, tag: "5"}
+      inputs:
+        - name: repo
+      run:
+        path: sh
+        args:
+          - -exc
+          - |
+            cd repo
+            npm install
+            npm test
+
 - name: build
   public: true
   plan:
 
   - get: repo
+    passed: [test]
     trigger: true
 
   - put: image
