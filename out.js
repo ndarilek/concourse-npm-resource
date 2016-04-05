@@ -5,12 +5,27 @@ var spawn = require("child_process").spawn
 process.stdin.on("data", (chunk) => {
   const data = JSON.parse(chunk)
   const source = data.source
+  const username = source.username
+  if(!username) {
+    console.error("Please specify a username.")
+    process.exit(1)
+  }
+  const password = source.password
+  if(!password) {
+    console.error("Please specify a password.")
+    process.exit(1)
+  }
+  const email = source.email
+  if(!email) {
+    console.error("Please specify an email address.")
+    process.exit(1)
+  }
   const npmLogin = spawn("npm login")
   npmLogin.stderr.pipe(process.stderr)
   npmLogin.stdout.pipe(process.stderr)
-  npmLogin.stdin.write(`${source.username}\n`)
-  npmLogin.stdin.write(`${source.password}\n`)
-  npmLogin.stdin.write(`${source.email}\n`)
+  npmLogin.stdin.write(`${username}\n`)
+  npmLogin.stdin.write(`${password}\n`)
+  npmLogin.stdin.write(`${email}\n`)
   npmLogin.on("exit", (code) => {
     if(code)
       process.exit(code)
@@ -24,8 +39,15 @@ process.stdin.on("data", (chunk) => {
       console.error("Missing `path` param")
       process.exit(1)
     }
+    var cmdLine = "npm publish"
+    const access = params.access
+    if(access && ["public", "restricted"].indexOf(access) == -1) {
+      console.err("Specified access ("+access+") is neither `public` nor `restricted`.")
+      process.exit(1)
+    }
+    cmdLine += `--access ${access}`
     const cwd = `${process.argv[2]}/${path}`
-    const npmPublish = spawn("npm publish", {cwd: cwd})
+    const npmPublish = spawn(cmdLine, {cwd: cwd})
     npmPublish.stdout.pipe(process.stderr)
     npmPublish.stderr.pipe(process.stderr)
     var output = ""

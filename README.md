@@ -51,6 +51,7 @@ Publishes a resource containing a `package.json` to NPM.
 
 * `path`: *Required.* Path to `package.json` to be published.
 
+* `access`: *Optional.* One of either `public` or `restricted`. Determines the access level of the published package.
 
 #### Examples
 
