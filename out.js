@@ -20,7 +20,7 @@ process.stdin.on("data", (chunk) => {
     console.error("Please specify an email address.")
     process.exit(1)
   }
-  const npmLogin = spawn("npm login")
+  const npmLogin = spawn("npm", ["login"])
   npmLogin.stderr.pipe(process.stderr)
   npmLogin.stdout.pipe(process.stderr)
   npmLogin.stdin.write(`${username}\n`)
@@ -39,15 +39,15 @@ process.stdin.on("data", (chunk) => {
       console.error("Missing `path` param")
       process.exit(1)
     }
-    var cmdLine = "npm publish"
+    var args = ["publish"]
     const access = params.access
     if(access && ["public", "restricted"].indexOf(access) == -1) {
       console.err("Specified access ("+access+") is neither `public` nor `restricted`.")
       process.exit(1)
     }
-    cmdLine += `--access ${access}`
+    args.push("--access", access)
     const cwd = `${process.argv[2]}/${path}`
-    const npmPublish = spawn(cmdLine, {cwd: cwd})
+    const npmPublish = spawn("npm", args, {cwd: cwd})
     npmPublish.stdout.pipe(process.stderr)
     npmPublish.stderr.pipe(process.stderr)
     var output = ""
