@@ -58,6 +58,10 @@ process.stdin.on("data", (chunk) => {
     npmPublish.stderr.pipe(process.stderr)
     var output = ""
     npmPublish.on("data", (data) => output += data.toString())
+    npmPublish.on("error", (err) => {
+      console.error(err)
+      process.exit(1)
+    })
     npmPublish.on("exit", (code) => {
       if(code)
         process.exit(1)
