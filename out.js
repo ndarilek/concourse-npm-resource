@@ -26,8 +26,12 @@ process.stdin.on("data", (chunk) => {
   npmLogin.stdin.write(`${username}\n`)
   setTimeout(() => {
     npmLogin.stdin.write(`${password}\n`)
-    setTimeout(() => npmLogin.stdin.write(`${email}\n`), 500)
-  }, 500)
+    setTimeout(() => npmLogin.stdin.write(`${email}\n`), 1000)
+  }, 1000)
+  npmLogin.on("error", (err) => {
+    console.error(err)
+    process.exit(1)
+  }
   npmLogin.on("exit", (code) => {
     if(code)
       process.exit(code)
