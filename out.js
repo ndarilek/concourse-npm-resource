@@ -31,7 +31,7 @@ process.stdin.on("data", (chunk) => {
   npmLogin.on("error", (err) => {
     console.error(err)
     process.exit(1)
-  }
+  })
   npmLogin.on("exit", (code) => {
     if(code)
       process.exit(code)
