@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-var spawn = require("child_process").spawn
+var exec = require("child_process").exec
 
 process.stdin.on("data", (chunk) => {
   const data = JSON.parse(chunk)
@@ -20,55 +20,36 @@ process.stdin.on("data", (chunk) => {
     console.error("Please specify an email address.")
     process.exit(1)
   }
-  const stdioOpts = [0, "pipe", "pipe"]
-  const npmLogin = spawn("npm", ["login"], {stdio: stdioOpts})
-  npmLogin.stderr.pipe(process.stderr)
-  npmLogin.stdout.pipe(process.stderr)
-  npmLogin.stdin.write(`${username}\n`)
-  setTimeout(() => {
-    npmLogin.stdin.write(`${password}\n`)
-    setTimeout(() => npmLogin.stdin.write(`${email}\n`), 1000)
-  }, 1000)
-  npmLogin.on("error", (err) => {
-    console.error(err)
+  const params = data.params
+  if(!params) {
+    console.error("Please specify params.")
     process.exit(1)
-  })
-  npmLogin.on("close", (code) => {
-    console.error("Closed")
-    if(code)
-      process.exit(code)
-    const params = data.params
-    if(!params) {
-      console.error("Please specify params.")
+  }
+  const npmLogin = exec("npm login", (err, stdout, stderr) => {
+    if(err) {
+      console.error(err.toString())
       process.exit(1)
     }
+    console.error("Logged in")
     const path = params.path
     if(!path) {
       console.error("Missing `path` param")
       process.exit(1)
     }
-    var args = ["publish"]
+    var cmdLine = "npm publish"
     const access = params.access
     if(access && ["public", "restricted"].indexOf(access) == -1) {
       console.err("Specified access ("+access+") is neither `public` nor `restricted`.")
       process.exit(1)
-    }
-    args.push("--access", access)
+    } else if(access)
+      cmdLine += ` --access ${access}`
     const cwd = `${process.argv[2]}/${path}`
-    const npmPublish = spawn("npm", args, {cwd: cwd, stdio: stdioOpts})
-    npmPublish.stdout.pipe(process.stderr)
-    npmPublish.stderr.pipe(process.stderr)
-    var output = ""
-    npmPublish.on("data", (data) => output += data.toString())
-    npmPublish.on("error", (err) => {
-      console.error(err)
-      process.exit(1)
-    })
-    npmPublish.on("close", (code) => {
-      console.error("Closed")
-      if(code)
+    const npmPublish = exec(cmdLine, {cwd: cwd}, (err, stdout, stderr) => {
+      if(err) {
+        console.error(err)
         process.exit(1)
-      const lines = output.split("\n")
+      }
+      const lines = output.split("\n").filter((v) => v)
       const line = lines[lines.length-1]
       if(line.startsWith("+")) {
         const tokens = line.split("@")
@@ -77,10 +58,17 @@ process.stdin.on("data", (chunk) => {
           console.log(JSON.stringify({version: {number: version}}))
           process.exit(0)
         } else {
-          console.error("Didn't get a version.")
+          console.error("Didn't get a version.", lines, line)
           process.exit(1)
         }
       }
     })
   })
+  npmLogin.stderr.pipe(process.stderr)
+  npmLogin.stdout.pipe(process.stderr)
+  npmLogin.stdin.write(`${username}\n`)
+  setTimeout(() => {
+    npmLogin.stdin.write(`${password}\n`)
+    setTimeout(() => npmLogin.stdin.write(`${email}\n`), 1000)
+  }, 1000)
 })
