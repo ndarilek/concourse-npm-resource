@@ -55,7 +55,7 @@ process.stdin.on("data", (chunk) => {
         process.exit(1)
       }
     } else {
-      console.error('Don't know what this output means: ${stdout.toString()}`)
+      console.error(`Don't know what this output means: ${stdout.toString()}`)
       process.exit(1)
     }
   })
