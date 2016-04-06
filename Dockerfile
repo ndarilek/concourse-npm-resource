@@ -1,5 +1,5 @@
 FROM node:5
-COPY package.json /opt/resource
+COPY package.json /opt/resource/package.json
 RUN cd /opt/resource && \
   npm install
 COPY check.js /opt/resource/check
