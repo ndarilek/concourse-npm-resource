@@ -1,9 +1,0 @@
-{
-  "private": true,
-  "scripts": {
-    "test": "node -c *.js"
-  },
-  "dependencies": {
-    "suppose": "^0.5.2"
-  }
-}

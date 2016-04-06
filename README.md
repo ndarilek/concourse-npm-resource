@@ -15,11 +15,15 @@ resource_types:
 
 ## Source Configuration
 
-* `username`: *Required.* The NPM username.
+* `token`: *Required.* The NPM access token found in your .npmrc.
 
-* `password`: *Required.* The NPM password.
+Look for a line like the following:
 
-* `email`: *Required.* The NPM email address.
+```
+//registry.npmjs.org/:_authToken=abcde
+```
+
+Then copy everything after the `=` to the `token` setting. You must have done `npm login` first.
 
 ### Example
 
@@ -28,9 +32,7 @@ resources:
 - name: package
   type: npm
   source:
-    username: {{npm_username}}
-    password: {{npm_password}}
-    email: {{npm_email}}
+    username: {{npm_token}}
 ```
 
 ## Behavior

@@ -1,75 +1,62 @@
 #!/usr/bin/env node
 
 var exec = require("child_process").exec,
-  suppose = require("suppose")
+  fs = require("fs")
 
 process.stdin.on("data", (chunk) => {
   const data = JSON.parse(chunk)
   const source = data.source
-  const username = source.username
-  if(!username) {
-    console.error("Please specify a username.")
+  if(!source) {
+    console.error("Please specify a source.")
     process.exit(1)
   }
-  const password = source.password
-  if(!password) {
-    console.error("Please specify a password.")
-    process.exit(1)
-  }
-  const email = source.email
-  if(!email) {
-    console.error("Please specify an email address.")
+  const token = source.token
+  if(!token) {
+    console.error("Please specify `source.token`.")
     process.exit(1)
   }
   const params = data.params
   if(!params) {
-    console.error("Please specify params.")
+    console.error("Please specify `params`.")
     process.exit(1)
   }
-  suppose("npm", ["login"], {debug: process.stdout})
-  .when(/Username/, username)
-  .when(/Password/, password)
-  .when(/Email/, email)
-  .on("error", (err) => {
-    console.error(err.toString())
+  const npmrc = fs.createWriteStream("/root/.npmrc")
+  npmrc.write(`//registry.npmjs.org/:_authToken=${token}`)
+  npmrc.close()
+
+  const path = params.path
+  if(!path) {
+    console.error("Please set `params.path`.")
     process.exit(1)
-  }).end((code) => {
-    if(code) {
-      console.error("Error logging in")
-      process.exit(code)
-    }
-    console.error("Logged in")
-    const path = params.path
-    if(!path) {
-      console.error("Missing `path` param")
+  }
+  var cmdLine = "npm publish"
+  const access = params.access
+  if(access && ["public", "restricted"].indexOf(access) == -1) {
+    console.error("Specified access ("+access+") is neither `public` nor `restricted`.")
+    process.exit(1)
+  } else if(access)
+    cmdLine += ` --access ${access}`
+  const cwd = `${process.argv[2]}/${path}`
+  exec(cmdLine, {cwd: cwd}, (err, stdout, stderr) => {
+    if(err) {
+      console.error(err)
       process.exit(1)
     }
-    var cmdLine = "npm publish"
-    const access = params.access
-    if(access && ["public", "restricted"].indexOf(access) == -1) {
-      console.error("Specified access ("+access+") is neither `public` nor `restricted`.")
-      process.exit(1)
-    } else if(access)
-      cmdLine += ` --access ${access}`
-    const cwd = `${process.argv[2]}/${path}`
-    const npmPublish = exec(cmdLine, {cwd: cwd}, (err, stdout, stderr) => {
-      if(err) {
-        console.error(err)
+    const lines = stdout.split("\n").filter((v) => v)
+    const line = lines[lines.length-1]
+    const tokens = line.split("@")
+    if(tokens.length > 1) {
+      const version = tokens[tokens.length-1]
+      if(version) {
+        console.log(JSON.stringify({version: {number: version}}))
+        process.exit(0)
+      } else {
+        console.error("Didn't get a version.", lines, line)
         process.exit(1)
       }
-      const lines = output.split("\n").filter((v) => v)
-      const line = lines[lines.length-1]
-      if(line.startsWith("+")) {
-        const tokens = line.split("@")
-        const version = tokens[tokens.length-1]
-        if(version) {
-          console.log(JSON.stringify({version: {number: version}}))
-          process.exit(0)
-        } else {
-          console.error("Didn't get a version.", lines, line)
-          process.exit(1)
-        }
-      }
-    })
+    } else {
+      console.error('Don't know what this output means: ${stdout.toString()}`)
+      process.exit(1)
+    }
   })
 })
