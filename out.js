@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
-var exec = require("child_process").exec
+var exec = require("child_process").exec,
+  suppose = require("suppose")
 
 process.stdin.on("data", (chunk) => {
   const data = JSON.parse(chunk)
@@ -25,12 +26,17 @@ process.stdin.on("data", (chunk) => {
     console.error("Please specify params.")
     process.exit(1)
   }
-  const npmLogin = exec("npm login", (err, stdout, stderr) => {
-    console.error(stdout.toString())
-    console.error(stderr.toString())
-    if(err) {
-      console.error(err.toString())
-      process.exit(1)
+  suppose("npm", ["login"])
+  .when("/Username:/, username)
+  .when(/Password:/, password)
+  .when(/Email:/, email)
+  .error((err) => {
+    console.err(err.toString())
+    process.exit(1)
+  }).end((code) => {
+    if(code) {
+      console.error("Error logging in")
+      process.exit(code)
     }
     console.error("Logged in")
     const path = params.path
@@ -66,9 +72,4 @@ process.stdin.on("data", (chunk) => {
       }
     })
   })
-  npmLogin.stdin.write(`${username}\n`)
-  setTimeout(() => {
-    npmLogin.stdin.write(`${password}\n`)
-    setTimeout(() => npmLogin.stdin.write(`${email}\n`), 1000)
-  }, 1000)
 })
