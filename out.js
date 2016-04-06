@@ -20,7 +20,8 @@ process.stdin.on("data", (chunk) => {
     console.error("Please specify an email address.")
     process.exit(1)
   }
-  const npmLogin = spawn("npm", ["login"])
+  const stdioOpts = [0, "pipe", "pipe"]
+  const npmLogin = spawn("npm", ["login"], {stdio: stdioOpts})
   npmLogin.stderr.pipe(process.stderr)
   npmLogin.stdout.pipe(process.stderr)
   npmLogin.stdin.write(`${username}\n`)
@@ -54,7 +55,7 @@ process.stdin.on("data", (chunk) => {
     }
     args.push("--access", access)
     const cwd = `${process.argv[2]}/${path}`
-    const npmPublish = spawn("npm", args, {cwd: cwd})
+    const npmPublish = spawn("npm", args, {cwd: cwd, stdio: stdioOpts})
     npmPublish.stdout.pipe(process.stderr)
     npmPublish.stderr.pipe(process.stderr)
     var output = ""
