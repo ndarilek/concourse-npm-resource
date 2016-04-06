@@ -26,6 +26,8 @@ process.stdin.on("data", (chunk) => {
     process.exit(1)
   }
   const npmLogin = exec("npm login", (err, stdout, stderr) => {
+    console.error(stdout.toString())
+    console.error(stderr.toString())
     if(err) {
       console.error(err.toString())
       process.exit(1)
@@ -64,8 +66,6 @@ process.stdin.on("data", (chunk) => {
       }
     })
   })
-  npmLogin.stderr.pipe(process.stderr)
-  npmLogin.stdout.pipe(process.stderr)
   npmLogin.stdin.write(`${username}\n`)
   setTimeout(() => {
     npmLogin.stdin.write(`${password}\n`)
