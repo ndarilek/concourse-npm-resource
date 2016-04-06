@@ -27,9 +27,9 @@ process.stdin.on("data", (chunk) => {
     process.exit(1)
   }
   suppose("npm", ["login"])
-  .when("/Username:/, username)
-  .when(/Password:/, password)
-  .when(/Email:/, email)
+  .when(/Username/, username)
+  .when(/Password/, password)
+  .when(/Email/, email)
   .error((err) => {
     console.err(err.toString())
     process.exit(1)
