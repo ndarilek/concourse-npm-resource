@@ -26,7 +26,7 @@ process.stdin.on("data", (chunk) => {
     console.error("Please specify params.")
     process.exit(1)
   }
-  suppose("npm", ["login"])
+  suppose("npm", ["login"], {debug: process.stdout})
   .when(/Username/, username)
   .when(/Password/, password)
   .when(/Email/, email)
