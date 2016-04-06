@@ -32,7 +32,8 @@ process.stdin.on("data", (chunk) => {
     console.error(err)
     process.exit(1)
   })
-  npmLogin.on("exit", (code) => {
+  npmLogin.on("close", (code) => {
+    console.error("Closed")
     if(code)
       process.exit(code)
     const params = data.params
@@ -62,7 +63,8 @@ process.stdin.on("data", (chunk) => {
       console.error(err)
       process.exit(1)
     })
-    npmPublish.on("exit", (code) => {
+    npmPublish.on("close", (code) => {
+      console.error("Closed")
       if(code)
         process.exit(1)
       const lines = output.split("\n")
