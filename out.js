@@ -47,7 +47,7 @@ process.stdin.on("data", (chunk) => {
     var cmdLine = "npm publish"
     const access = params.access
     if(access && ["public", "restricted"].indexOf(access) == -1) {
-      console.err("Specified access ("+access+") is neither `public` nor `restricted`.")
+      console.error("Specified access ("+access+") is neither `public` nor `restricted`.")
       process.exit(1)
     } else if(access)
       cmdLine += ` --access ${access}`
