@@ -30,7 +30,7 @@ process.stdin.on("data", (chunk) => {
   .when(/Username/, username)
   .when(/Password/, password)
   .when(/Email/, email)
-  .error((err) => {
+  .on("error", (err) => {
     console.err(err.toString())
     process.exit(1)
   }).end((code) => {
